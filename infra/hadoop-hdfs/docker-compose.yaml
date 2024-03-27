@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  namenode:
+    image: hadoop:0.0.0
+    ports:
+      - "50070:50070"
+      - "8020:8020"
+    volumes:
+      - namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    command: ["/bin/bash", "-c", "/start-hadoop.sh namenode"]
+
+  datanode:
+    image: hadoop:0.0.0
+    volumes:
+      - datanode:/hadoop/dfs/data
+    environment:
+      - SERVICE_PRECONDITION=namenode:9000
+    command: ["/bin/bash", "-c", "/start-hadoop.sh datanode"]
+
+volumes:
+  namenode:
+  datanode:
