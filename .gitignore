@@ -1,2 +1,4 @@
 namenode
 datanode
+.venv
+__pycache__
