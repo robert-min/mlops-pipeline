@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  namenode:
+    image: hadoop:0.0.0
+    container_name: namenode
+    ports:
+      - "50070:50070"
+      - "9870:9870"
+      - "9000:9000"
+    volumes:
+      - namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    command: ["/bin/bash", "-c", "/start-hadoop.sh namenode"]
+
+  datanode:
+    image: hadoop:0.0.0
+    container_name: datanode
+    volumes:
+      - datanode:/hadoop/dfs/data
+    environment:
+      - SERVICE_PRECONDITION=namenode:9000
+    command: ["/bin/bash", "-c", "/start-hadoop.sh datanode"]
+
+  resourcemanager:
+    image: hadoop:0.0.0
+    container_name: resourcemanager
+    ports:
+      - "8088:8088"
+    links:
+      - namenode
+    command: ["/bin/bash", "-c", "/start-hadoop.sh resourcemanager"]
+
+  nodemanager:
+    image: hadoop:0.0.0
+    container_name: nodemanager
+    links:
+      - resourcemanager
+    command: ["/bin/bash", "-c", "/start-hadoop.sh nodemanager"]
+
+volumes:
+  namenode:
+  datanode:
