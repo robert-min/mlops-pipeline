@@ -11,6 +11,7 @@ def train():
     datasets_path = abspath(join(root_path, "datasets"))
     train_path = abspath(join(datasets_path, "train"))
     outputs_path = abspath(join(root_path, "outputs"))
+    outputs_train_path = abspath(join(outputs_path, "train"))
     models_path = abspath(join(root_path, "models"))
 
     # Data loading
@@ -50,7 +51,7 @@ def train():
                                 overlaying="y"
                                 ))
 
-    figure_file = abspath(join(outputs_path, "AC_power.png"))
+    figure_file = abspath(join(outputs_train_path, "AC_power.png"))
     fig.write_image(figure_file)
     
     # Feature Engineering
@@ -97,7 +98,7 @@ def train():
     epochs = 100
     batch = 10
     history = model.fit(X_train, X_train, epochs=epochs, batch_size=batch, validation_split=.2, verbose=0).history
-    model_file = abspath(join(models_path, "lstm.h5"))
+    model_file = abspath(join(models_path, "lstm_model.h5"))
     model.save(model_file)
 
     fig = go.Figure()
@@ -113,7 +114,7 @@ def train():
                     yaxis=dict(title="Loss"),
                     xaxis=dict(title="Epoch"))
 
-    figure_file = abspath(join(outputs_path, "Error_Loss.png"))
+    figure_file = abspath(join(outputs_train_path, "Error_Loss.png"))
     fig.write_image(figure_file)
 
     # Evaluation metrics
@@ -132,7 +133,7 @@ def train():
                     xaxis=dict(title="Error delta between predicted and real data [AC Power]"),
                     yaxis=dict(title="Data point counts"))
 
-    figure_file = abspath(join(outputs_path, "Error_Distribution.png"))
+    figure_file = abspath(join(outputs_train_path, "Error_Distribution.png"))
     fig.write_image(figure_file)
 
     X_pred = model.predict(X_test)
@@ -160,7 +161,7 @@ def train():
                     xaxis=dict(title="DateTime"),
                     yaxis=dict(title="Loss"))
     
-    figure_file = abspath(join(outputs_path, "Threshold.png"))
+    figure_file = abspath(join(outputs_train_path, "Threshold.png"))
     fig.write_image(figure_file)
 
     scores['Anomaly'].value_counts()
@@ -168,7 +169,7 @@ def train():
     anomalies = anomalies.rename(columns={'real AC':'anomalies'})
     scores = scores.merge(anomalies, left_index=True, right_index=True, how='left')
 
-    anomaly_csv_file = abspath(join(outputs_path, "anomalies.csv"))
+    anomaly_csv_file = abspath(join(outputs_train_path, "anomalies.csv"))
     scores[(scores['Anomaly'] == 1) & (scores['datetime'].notnull())].to_csv(anomaly_csv_file, index=False)
 
     fig = go.Figure()
@@ -186,7 +187,7 @@ def train():
 
     fig.update_layout(title_text="Anomalies Detected LSTM Autoencoder")
 
-    figure_file = abspath(join(outputs_path, "Anomaly.png"))
+    figure_file = abspath(join(outputs_train_path, "Anomaly.png"))
     fig.write_image(figure_file)
 
 if __name__ == "__main__":
