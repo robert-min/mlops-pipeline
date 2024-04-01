@@ -98,7 +98,7 @@ def train():
     epochs = 100
     batch = 10
     history = model.fit(X_train, X_train, epochs=epochs, batch_size=batch, validation_split=.2, verbose=0).history
-    model_file = abspath(join(models_path, "lstm_model.h5"))
+    model_file = abspath(join(models_path, "lstm_model.keras"))
     model.save(model_file)
 
     fig = go.Figure()

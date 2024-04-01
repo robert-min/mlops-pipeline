@@ -65,7 +65,7 @@ def inference():
     X = X.reshape(X.shape[0], 1, X.shape[1])
 
     from tensorflow.keras.models import load_model
-    model_file = abspath(join(models_path, "lstm_model.h5"))
+    model_file = abspath(join(models_path, "lstm_model.keras"))
     cached_model = load_model(model_file)
 
     X_pred = cached_model.predict(X)
