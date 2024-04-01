@@ -3,8 +3,10 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 
 from airflow.models.dag import DAG
-from airflow.operators.python import PythonVirtualenvOperator
+from airflow.operators.python import PythonVirtualenvOperator, ShortCircuitOperator
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from tasks.anomaly_detection_inference import inference
+from tasks.anomaly_dtection_model_drift import is_model_drift
 
 with DAG(
     "anomaly_detection_inference",
@@ -24,4 +26,14 @@ with DAG(
         python_callable=inference
     )
 
-    inference_task
+    model_drift_task = ShortCircuitOperator(
+        task_id="is_model_drift_task",
+        python_callable=is_model_drift,
+    )
+
+    train_trigger_task = TriggerDagRunOperator(
+        task_id="trian_trigger_task",
+        trigger_dag_id="train"
+    )
+
+    inference_task >> model_drift_task >> train_trigger_task
