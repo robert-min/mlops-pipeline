@@ -2,27 +2,31 @@
 # coding: utf-8
 
 def train():
-    from os.path import abspath, join, pardir
+    from os.path import join, pardir
     import numpy as np
     import pandas as pd
     import plotly.graph_objects as go
 
-    root_path = abspath(join(__file__, pardir))
-    datasets_path = abspath(join(root_path, "datasets"))
-    train_path = abspath(join(datasets_path, "train"))
-    outputs_path = abspath(join(root_path, "outputs"))
-    outputs_train_path = abspath(join(outputs_path, "train"))
-    models_path = abspath(join(root_path, "models"))
+    from datetime import datetime
+    import pytz
+    kst = pytz.timezone('Asia/Seoul')
+    now = datetime.now(kst)
+
+    dags_path = join("./", "dags")
+    datasets_path = join(dags_path, "datasets")
+    train_path = join(datasets_path, "train")
+    outputs_path = join(dags_path, "outputs")
+    outputs_train_path = join(outputs_path, "train")
+    models_path = join(dags_path, "models")
 
     # Data loading
-    generatation1_file = abspath(join(train_path, "Plant_1_Generation_Data.csv"))
+    generatation1_file = join(train_path, "Plant_1_Generation_Data.csv")
     generation1 = pd.read_csv(generatation1_file)
-    weather1_file = abspath(join(train_path, "Plant_1_Weather_Sensor_Data.csv"))
+    weather1_file = join(train_path, "Plant_1_Weather_Sensor_Data.csv")
     weather1 = pd.read_csv(weather1_file)
 
     generation1['DATE_TIME'] = pd.to_datetime(generation1['DATE_TIME'], dayfirst=True)
     weather1['DATE_TIME'] = pd.to_datetime(weather1['DATE_TIME'], dayfirst=False)
-    # print(generation1)
 
     # EDA
     inverters = list(generation1['SOURCE_KEY'].unique())
@@ -51,7 +55,7 @@ def train():
                                 overlaying="y"
                                 ))
 
-    figure_file = abspath(join(outputs_train_path, "AC_power.png"))
+    figure_file = join(outputs_train_path, f"{now}_AC_power.png")
     fig.write_image(figure_file)
     
     # Feature Engineering
@@ -76,7 +80,7 @@ def train():
     print(f"X_test shape: {X_test.shape}")
 
     # Train model
-    from tensorflow.keras.layers import Input, Dropout, Dense, LSTM, TimeDistributed, RepeatVector
+    from tensorflow.keras.layers import Input, Dense, LSTM, TimeDistributed, RepeatVector
     from tensorflow.keras.models import Model
     from tensorflow.keras import regularizers
 
@@ -98,7 +102,7 @@ def train():
     epochs = 100
     batch = 10
     history = model.fit(X_train, X_train, epochs=epochs, batch_size=batch, validation_split=.2, verbose=0).history
-    model_file = abspath(join(models_path, "lstm_model.keras"))
+    model_file = join(models_path, "lstm_model.keras")
     model.save(model_file)
 
     fig = go.Figure()
@@ -114,7 +118,7 @@ def train():
                     yaxis=dict(title="Loss"),
                     xaxis=dict(title="Epoch"))
 
-    figure_file = abspath(join(outputs_train_path, "Error_Loss.png"))
+    figure_file = join(outputs_train_path, f"{now}_Error_Loss.png")
     fig.write_image(figure_file)
 
     # Evaluation metrics
@@ -133,7 +137,7 @@ def train():
                     xaxis=dict(title="Error delta between predicted and real data [AC Power]"),
                     yaxis=dict(title="Data point counts"))
 
-    figure_file = abspath(join(outputs_train_path, "Error_Distribution.png"))
+    figure_file = join(outputs_train_path, f"{now}_Error_Distribution.png")
     fig.write_image(figure_file)
 
     X_pred = model.predict(X_test)
@@ -161,7 +165,7 @@ def train():
                     xaxis=dict(title="DateTime"),
                     yaxis=dict(title="Loss"))
     
-    figure_file = abspath(join(outputs_train_path, "Threshold.png"))
+    figure_file = join(outputs_train_path, f"{now}_Threshold.png")
     fig.write_image(figure_file)
 
     scores['Anomaly'].value_counts()
@@ -169,7 +173,7 @@ def train():
     anomalies = anomalies.rename(columns={'real AC':'anomalies'})
     scores = scores.merge(anomalies, left_index=True, right_index=True, how='left')
 
-    anomaly_csv_file = abspath(join(outputs_train_path, "anomalies.csv"))
+    anomaly_csv_file = join(outputs_train_path, f"{now}_anomalies.csv")
     scores[(scores['Anomaly'] == 1) & (scores['datetime'].notnull())].to_csv(anomaly_csv_file, index=False)
 
     fig = go.Figure()
@@ -187,7 +191,7 @@ def train():
 
     fig.update_layout(title_text="Anomalies Detected LSTM Autoencoder")
 
-    figure_file = abspath(join(outputs_train_path, "Anomaly.png"))
+    figure_file = join(outputs_train_path, f"{now}_Anomaly.png")
     fig.write_image(figure_file)
 
 if __name__ == "__main__":

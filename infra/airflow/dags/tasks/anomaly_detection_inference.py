@@ -2,22 +2,28 @@
 # coding: utf-8
 
 def inference():
-    from os.path import abspath, join, pardir
+    from os.path import join, pardir
     import numpy as np # linear algebra
     import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
     import plotly.graph_objects as go
 
-    root_path = abspath(join(__file__, pardir))
-    datasets_path = abspath(join(root_path, "datasets"))
-    inference_path = abspath(join(datasets_path, "inference"))
-    outputs_path = abspath(join(root_path, "outputs"))
-    outputs_inference_path = abspath(join(outputs_path, "inference"))
-    models_path = abspath(join(root_path, "models"))
+    from datetime import datetime
+    import pytz
+    
+    kst = pytz.timezone('Asia/Seoul')
+    now = datetime.now(kst)
+
+    dags_path = join("./", "dags")
+    datasets_path = join(dags_path, "datasets")
+    inference_path = join(datasets_path, "inference")
+    outputs_path = join(dags_path, "outputs")
+    outputs_inference_path = join(outputs_path, "inference")
+    models_path = join(dags_path, "models")
 
     # Data loading
-    generation1_file = abspath(join(inference_path, "Plant_1_Generation_Data.csv"))
+    generation1_file = join(inference_path, "Plant_1_Generation_Data.csv")
     generation1 = pd.read_csv(generation1_file)
-    weather1_file =  abspath(join(inference_path, "Plant_1_Weather_Sensor_Data.csv"))
+    weather1_file =  join(inference_path, "Plant_1_Weather_Sensor_Data.csv")
     weather1 = pd.read_csv(weather1_file)
     generation1['DATE_TIME'] = pd.to_datetime(generation1['DATE_TIME'], dayfirst=True)
     weather1['DATE_TIME'] = pd.to_datetime(weather1['DATE_TIME'], dayfirst=False)
@@ -49,7 +55,7 @@ def inference():
                                 overlaying="y"
                                 ))
 
-    figure_file = abspath(join(outputs_inference_path, "AC_power.png"))
+    figure_file = join(outputs_inference_path, f"{now}_AC_power.png")
     fig.write_image(figure_file)
 
     # Feature Engineering
@@ -65,7 +71,7 @@ def inference():
     X = X.reshape(X.shape[0], 1, X.shape[1])
 
     from tensorflow.keras.models import load_model
-    model_file = abspath(join(models_path, "lstm_model.keras"))
+    model_file = join(models_path, "lstm_model.keras")
     cached_model = load_model(model_file)
 
     X_pred = cached_model.predict(X)
@@ -86,7 +92,7 @@ def inference():
     anomalies = anomalies.rename(columns={'real AC':'anomalies'})
     scores = scores.merge(anomalies, left_index=True, right_index=True, how='left')
 
-    anomaly_csv_file = abspath(join(outputs_inference_path, "anomalies.csv"))
+    anomaly_csv_file = join(outputs_inference_path, f"{now}_anomalies.csv")
     scores[(scores['Anomaly'] == 1) & (scores['datetime'].notnull())].to_csv(anomaly_csv_file, index=False)
 
     fig = go.Figure()
@@ -104,7 +110,7 @@ def inference():
 
     fig.update_layout(title_text="Anomalies Detected LSTM Autoencoder")
 
-    figure_file = abspath(join(outputs_inference_path, "Anomaly.png"))
+    figure_file = join(outputs_inference_path, f"{now}_Anomaly.png")
     fig.write_image(figure_file)
 
     return
