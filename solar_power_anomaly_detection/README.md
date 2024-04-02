@@ -1,6 +1,6 @@
-## Solar Power Anomaly detection Example
+## Solar Power Anomaly detection
 
-- 태양렬 데이터를 활용하여 이상치를 탐지를 통해 모델 성능이 유지되도록 재학습하는 ML 파이프라인 구축
+- 태양열 데이터를 활용하여 이상치를 탐지를 통해 모델 성능이 유지되도록 재학습하는 ML 파이프라인 구축
 - ML Engineer가 ML 코드를 작업했음을 가정하고 프로젝트 진행(Kaggle에 업로드 된 코드 사용)
 
 <br>
